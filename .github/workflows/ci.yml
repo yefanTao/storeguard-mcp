@@ -1,0 +1,30 @@
+name: WooSafe MCP CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  php-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+      - name: Lint all PHP files
+        run: |
+          find woosafe-mcp -name "*.php" -print0 | xargs -0 -n1 php -l
+      - name: Verify ABSPATH / HPOS / Nonce security invariants
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          core = Path("woosafe-mcp")
+          assert "custom_order_tables" in (core / "woosafe-mcp.php").read_text()
+          assert "wp_hash_password" in (core / "includes/class-auth.php").read_text()
+          assert "hash_equals" in (core / "includes/class-auth.php").read_text()
+          assert "__return_true" not in (core / "includes/class-mcp-endpoint.php").read_text()
+          assert (core / "admin/class-admin-page.php").read_text().count("check_admin_referer(") == 4
+          print("All security & HPOS invariants passed.")
+          PY

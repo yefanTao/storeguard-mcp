@@ -120,7 +120,7 @@ final class WooSafe_MCP_Endpoint {
 		$headers    = array( 'Content-Type' => 'application/json; charset=utf-8' );
 		$session_id = $request->get_header( 'mcp-session-id' );
 
-		if ( is_array( $decoded ) && array_is_list( $decoded ) ) {
+		if ( is_array( $decoded ) && ( array() === $decoded || array_keys( $decoded ) === range( 0, count( $decoded ) - 1 ) ) ) {
 			if ( empty( $decoded ) ) {
 				return self::json_rpc_error_response( null, -32600, 'Invalid Request: empty batch.', null, 400 );
 			}

@@ -134,10 +134,10 @@ final class WooSafe_MCP_Admin_Page {
 		WooSafe_MCP_Guardrails::update_settings(
 			array(
 				'mode'                => $raw_mode,
-				'max_price_delta_pct' => isset( $_POST['max_price_delta_pct'] ) ? (float) wp_unslash( $_POST['max_price_delta_pct'] ) : 25.0,
+				'max_price_delta_pct' => isset( $_POST['max_price_delta_pct'] ) ? (float) sanitize_text_field( wp_unslash( $_POST['max_price_delta_pct'] ) ) : 25.0,
 				'max_batch_items'     => isset( $_POST['max_batch_items'] ) ? absint( wp_unslash( $_POST['max_batch_items'] ) ) : 20,
-				'max_coupon_percent'  => isset( $_POST['max_coupon_percent'] ) ? (float) wp_unslash( $_POST['max_coupon_percent'] ) : 50.0,
-				'max_coupon_fixed'    => isset( $_POST['max_coupon_fixed'] ) ? (float) wp_unslash( $_POST['max_coupon_fixed'] ) : 500.0,
+				'max_coupon_percent'  => isset( $_POST['max_coupon_percent'] ) ? (float) sanitize_text_field( wp_unslash( $_POST['max_coupon_percent'] ) ) : 50.0,
+				'max_coupon_fixed'    => isset( $_POST['max_coupon_fixed'] ) ? (float) sanitize_text_field( wp_unslash( $_POST['max_coupon_fixed'] ) ) : 500.0,
 				'allowed_write_tools' => $allowed_map,
 			)
 		);

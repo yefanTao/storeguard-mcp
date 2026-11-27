@@ -155,10 +155,8 @@ final class WooSafe_MCP_Snapshots {
 	public static function get_recent_snapshots( int $limit = 25 ): array {
 		global $wpdb;
 		$limit = max( 1, min( 100, $limit ) );
-		$table = self::table_snapshots();
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$rows = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table} ORDER BY id DESC LIMIT %d", $limit ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i ORDER BY id DESC LIMIT %d', self::table_snapshots(), $limit ) );
 		return is_array( $rows ) ? $rows : array();
 	}
 
@@ -171,10 +169,8 @@ final class WooSafe_MCP_Snapshots {
 	public static function get_recent_audit_logs( int $limit = 50 ): array {
 		global $wpdb;
 		$limit = max( 1, min( 200, $limit ) );
-		$table = self::table_audit_log();
-
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$rows = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$table} ORDER BY id DESC LIMIT %d", $limit ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$rows = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %i ORDER BY id DESC LIMIT %d', self::table_audit_log(), $limit ) );
 		return is_array( $rows ) ? $rows : array();
 	}
 
@@ -189,10 +185,10 @@ final class WooSafe_MCP_Snapshots {
 		global $wpdb;
 
 		$snapshot_uuid = sanitize_text_field( $snapshot_uuid );
-		$table         = self::table_snapshots();
+		$table = self::table_snapshots();
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$snapshot = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$table} WHERE snapshot_uuid = %s LIMIT 1", $snapshot_uuid ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+		$snapshot = $wpdb->get_row( $wpdb->prepare( 'SELECT * FROM %i WHERE snapshot_uuid = %s LIMIT 1', $table, $snapshot_uuid ) );
 
 		if ( ! $snapshot ) {
 			return array(

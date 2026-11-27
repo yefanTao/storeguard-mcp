@@ -24,10 +24,8 @@
     {
       "step": "installPlugin",
       "pluginData": {
-        "resource": "git:directory",
-        "url": "https://github.com/yefanTao/woosafe-mcp",
-        "ref": "HEAD",
-        "path": "woosafe-mcp"
+        "resource": "url",
+        "url": "https://woosafe-mcp.kittenlabs-hq.workers.dev/downloads/woosafe-mcp-v1.0.0.zip"
       }
     }
   ]

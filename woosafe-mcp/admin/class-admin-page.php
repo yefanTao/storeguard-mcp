@@ -27,10 +27,35 @@ final class WooSafe_MCP_Admin_Page {
 	 */
 	public static function init(): void {
 		add_action( 'admin_menu', array( __CLASS__, 'register_menu' ) );
+		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'enqueue_assets' ) );
 		add_action( 'admin_post_woosafe_generate_token', array( __CLASS__, 'handle_generate_token' ) );
 		add_action( 'admin_post_woosafe_revoke_token', array( __CLASS__, 'handle_revoke_token' ) );
 		add_action( 'admin_post_woosafe_save_settings', array( __CLASS__, 'handle_save_settings' ) );
 		add_action( 'admin_post_woosafe_rollback_snapshot', array( __CLASS__, 'handle_rollback_snapshot' ) );
+	}
+
+	/**
+	 * Enqueue scoped admin CSS and JS on WooSafe MCP screen only.
+	 *
+	 * @param string $hook_suffix Current admin page hook suffix.
+	 */
+	public static function enqueue_assets( string $hook_suffix ): void {
+		if ( 'woocommerce_page_' . self::PAGE_SLUG !== $hook_suffix ) {
+			return;
+		}
+		wp_enqueue_style(
+			'woosafe-mcp-admin',
+			WOOSAFE_MCP_URL . 'assets/admin.css',
+			array(),
+			WOOSAFE_MCP_VERSION
+		);
+		wp_enqueue_script(
+			'woosafe-mcp-admin',
+			WOOSAFE_MCP_URL . 'assets/admin.js',
+			array(),
+			WOOSAFE_MCP_VERSION,
+			true
+		);
 	}
 
 	/**
@@ -163,7 +188,12 @@ final class WooSafe_MCP_Admin_Page {
 			$new_token_box = null;
 		}
 
-		$notice       = isset( $_GET['woosafe_notice'] ) ? sanitize_key( wp_unslash( $_GET['woosafe_notice'] ) ) : '';
+		$notice_key   = 'woosafe_mcp_notice_' . get_current_user_id();
+		$notice_raw   = get_transient( $notice_key );
+		$notice       = is_string( $notice_raw ) ? sanitize_key( $notice_raw ) : '';
+		if ( '' !== $notice ) {
+			delete_transient( $notice_key );
+		}
 		$sample_token = $new_token_box ? (string) $new_token_box['token'] : 'YOUR_WOOSAFE_BEARER_TOKEN';
 
 		$cursor_config = wp_json_encode(
@@ -202,32 +232,6 @@ final class WooSafe_MCP_Admin_Page {
 		);
 		?>
 		<div class="wrap woosafe-wrap">
-			<style>
-				.woosafe-wrap { max-width: 1120px; margin-top: 18px; }
-				.woosafe-hero { background: #fff; border: 1px solid #dcdcde; border-radius: 8px; padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 18px; }
-				.woosafe-hero h1 { margin: 0 0 6px; font-size: 22px; font-weight: 700; }
-				.woosafe-hero p { margin: 0; color: #50575e; }
-				.woosafe-badges { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-				.woosafe-pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
-				.woosafe-pill-ro { background: #e7f5ee; color: #0b6e3d; border: 1px solid #9bd7b6; }
-				.woosafe-pill-rw { background: #fff7e6; color: #92400e; border: 1px solid #f5c26b; }
-				.woosafe-pill-hpos { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-				.woosafe-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
-				@media (max-width: 960px) { .woosafe-grid { grid-template-columns: 1fr; } }
-				.woosafe-card { background: #fff; border: 1px solid #dcdcde; border-radius: 8px; padding: 20px 22px; margin-bottom: 18px; }
-				.woosafe-card h2 { margin-top: 0; font-size: 16px; border-bottom: 1px solid #f0f0f1; padding-bottom: 10px; }
-				.woosafe-code-box { background: #0f172a; color: #e2e8f0; border-radius: 6px; padding: 14px; font-family: Consolas, Monaco, monospace; font-size: 12px; overflow-x: auto; white-space: pre; margin: 10px 0; }
-				.woosafe-token-reveal { background: #ecfdf5; border: 1px solid #6ee7b7; border-radius: 6px; padding: 14px; margin-bottom: 14px; }
-				.woosafe-token-reveal code { display: block; margin-top: 6px; padding: 8px; background: #fff; border: 1px solid #a7f3d0; font-size: 13px; word-break: break-all; }
-				.woosafe-btn-rollback { background: #059669 !important; border-color: #047857 !important; color: #fff !important; font-weight: 600; }
-				.woosafe-btn-rollback:hover { background: #047857 !important; }
-				.woosafe-tabs { display: flex; gap: 8px; margin-top: 10px; }
-				.woosafe-tab-btn.is-active { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
-				.woosafe-status-ok { color: #059669; font-weight: 600; }
-				.woosafe-status-denied { color: #b91c1c; font-weight: 600; }
-				.woosafe-status-muted { color: #64748b; }
-			</style>
-
 			<?php if ( 'token_created' === $notice ) : ?>
 				<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'Scoped Bearer token generated. Copy your MCP config below — the raw token is shown once.', 'woosafe-mcp' ); ?></p></div>
 			<?php elseif ( 'token_revoked' === $notice ) : ?>
@@ -481,46 +485,6 @@ final class WooSafe_MCP_Admin_Page {
 					</tbody>
 				</table>
 			</div>
-
-			<script>
-				(function () {
-					var activeTarget = 'cursor';
-					var tabs = document.querySelectorAll('.woosafe-tab-btn');
-					var cursorBox = document.getElementById('woosafe-config-cursor');
-					var claudeBox = document.getElementById('woosafe-config-claude');
-					var copyBtn = document.getElementById('woosafe-copy-config');
-					var feedback = document.getElementById('woosafe-copy-feedback');
-
-					tabs.forEach(function (btn) {
-						btn.addEventListener('click', function () {
-							activeTarget = btn.getAttribute('data-config-target');
-							tabs.forEach(function (b) { b.classList.remove('is-active'); });
-							btn.classList.add('is-active');
-							cursorBox.style.display = activeTarget === 'cursor' ? 'block' : 'none';
-							claudeBox.style.display = activeTarget === 'claude' ? 'block' : 'none';
-						});
-					});
-
-					if (copyBtn) {
-						copyBtn.addEventListener('click', function () {
-							var text = (activeTarget === 'cursor' ? cursorBox : claudeBox).textContent;
-							if (navigator.clipboard && navigator.clipboard.writeText) {
-								navigator.clipboard.writeText(text).then(function () {
-									feedback.textContent = 'Copied ' + activeTarget.toUpperCase() + ' MCP JSON!';
-								});
-							} else {
-								var ta = document.createElement('textarea');
-								ta.value = text;
-								document.body.appendChild(ta);
-								ta.select();
-								document.execCommand('copy');
-								document.body.removeChild(ta);
-								feedback.textContent = 'Copied ' + activeTarget.toUpperCase() + ' MCP JSON!';
-							}
-						});
-					}
-				})();
-			</script>
 		</div>
 		<?php
 	}
@@ -529,11 +493,11 @@ final class WooSafe_MCP_Admin_Page {
 	 * Redirect back to WooSafe MCP page with status notice query param.
 	 */
 	private static function redirect_with_notice( string $notice ): void {
+		set_transient( 'woosafe_mcp_notice_' . get_current_user_id(), sanitize_key( $notice ), 60 );
 		wp_safe_redirect(
 			add_query_arg(
 				array(
-					'page'           => self::PAGE_SLUG,
-					'woosafe_notice' => $notice,
+					'page' => self::PAGE_SLUG,
 				),
 				admin_url( 'admin.php' )
 			)

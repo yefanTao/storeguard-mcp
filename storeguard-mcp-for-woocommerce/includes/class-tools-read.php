@@ -1,18 +1,18 @@
 <?php
 /**
- * 6 Free Core Read-Only Audit Tools for WooSafe MCP.
+ * 6 Free Core Read-Only Audit Tools for StoreGuard MCP.
  *
  * Strictly HPOS-compatible: uses wc_get_orders(), wc_get_products(), WC_Coupon,
  * and OrderUtil::custom_orders_table_usage_is_enabled(). Redacts customer PII.
  *
- * @package WooSafe_MCP
+ * @package StoreGuard_MCP
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-final class WooSafe_MCP_Tools_Read {
+final class StoreGuard_MCP_Tools_Read {
 
 	public const TOOL_NAMES = array(
 		'store_health_audit',
@@ -39,7 +39,7 @@ final class WooSafe_MCP_Tools_Read {
 		return array(
 			array(
 				'name'        => 'store_health_audit',
-				'description' => 'Free Read-Only: Inspect WooCommerce HPOS status, WordPress/PHP versions, catalog & order posture, and active WooSafe MCP guardrail posture.',
+				'description' => 'Free Read-Only: Inspect WooCommerce HPOS status, WordPress/PHP versions, catalog & order posture, and active StoreGuard MCP guardrail posture.',
 				'inputSchema' => array(
 					'type'                 => 'object',
 					'properties'           => new stdClass(),
@@ -199,7 +199,7 @@ final class WooSafe_MCP_Tools_Read {
 			default:
 				return array(
 					'error' => array(
-						'code'    => 'WOOSAFE_UNKNOWN_TOOL',
+						'code'    => 'STOREGUARD_UNKNOWN_TOOL',
 						'message' => sprintf( 'Unknown read tool "%s".', $name ),
 					),
 				);
@@ -235,8 +235,8 @@ final class WooSafe_MCP_Tools_Read {
 			)
 		);
 
-		$settings      = WooSafe_MCP_Guardrails::get_settings();
-		$tokens        = WooSafe_MCP_Auth::get_tokens();
+		$settings      = StoreGuard_MCP_Guardrails::get_settings();
+		$tokens        = StoreGuard_MCP_Auth::get_tokens();
 		$active_tokens = 0;
 		foreach ( $tokens as $token ) {
 			if ( empty( $token['revoked'] ) ) {
@@ -597,12 +597,12 @@ final class WooSafe_MCP_Tools_Read {
 			$seo_title = (string) (
 				$product->get_meta( '_yoast_wpseo_title' )
 				?: $product->get_meta( 'rank_math_title' )
-				?: $product->get_meta( '_woosafe_seo_title' )
+				?: $product->get_meta( '_storeguard_seo_title' )
 			);
 			$seo_desc  = (string) (
 				$product->get_meta( '_yoast_wpseo_metadesc' )
 				?: $product->get_meta( 'rank_math_description' )
-				?: $product->get_meta( '_woosafe_seo_desc' )
+				?: $product->get_meta( '_storeguard_seo_desc' )
 			);
 
 			$image_id  = $product->get_image_id();

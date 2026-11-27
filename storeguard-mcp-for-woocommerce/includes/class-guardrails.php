@@ -1,6 +1,6 @@
 <?php
 /**
- * Safety Guardrail Engine for WooSafe MCP.
+ * Safety Guardrail Engine for StoreGuard MCP.
  *
  * Enforces:
  * - Default Read-Only Lock (all writes hard-disabled until explicitly enabled)
@@ -10,16 +10,16 @@
  * - Hard Batch Item Count Cap (default 20)
  * - Coupon Discount Ceilings & Draft-Only Enforcement
  *
- * @package WooSafe_MCP
+ * @package StoreGuard_MCP
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-final class WooSafe_MCP_Guardrails {
+final class StoreGuard_MCP_Guardrails {
 
-	public const OPTION_SETTINGS = 'woosafe_mcp_settings';
+	public const OPTION_SETTINGS = 'storeguard_mcp_settings';
 	public const MODE_READ_ONLY  = 'read_only';
 	public const MODE_GUARDED    = 'guarded_write';
 
@@ -35,7 +35,7 @@ final class WooSafe_MCP_Guardrails {
 	 * @return array<int, string>
 	 */
 	public static function get_registered_write_tools(): array {
-		$tools = apply_filters( 'woosafe_mcp_registered_write_tools', array() );
+		$tools = apply_filters( 'storeguard_mcp_registered_write_tools', array() );
 		if ( ! is_array( $tools ) ) {
 			return array();
 		}
@@ -150,13 +150,13 @@ final class WooSafe_MCP_Guardrails {
 			);
 		}
 
-		$scope = (string) ( $auth_context['scope'] ?? WooSafe_MCP_Auth::SCOPE_READ_ONLY );
-		if ( WooSafe_MCP_Auth::SCOPE_READ_WRITE !== $scope ) {
+		$scope = (string) ( $auth_context['scope'] ?? StoreGuard_MCP_Auth::SCOPE_READ_ONLY );
+		if ( StoreGuard_MCP_Auth::SCOPE_READ_WRITE !== $scope ) {
 			return array(
 				'allowed'     => false,
-				'code'        => 'WOOSAFE_SCOPE_READ_ONLY',
+				'code'        => 'STOREGUARD_SCOPE_READ_ONLY',
 				'message'     => sprintf( 'Blocked "%s": your Bearer token is scoped to read_only.', $tool_name ),
-				'remediation' => 'Generate a Guarded Read-Write token (wsmcp_rw_) in WooCommerce > WooSafe MCP.',
+				'remediation' => 'Generate a Guarded Read-Write token (sgmcp_rw_) in WooCommerce > StoreGuard MCP.',
 			);
 		}
 
@@ -164,18 +164,18 @@ final class WooSafe_MCP_Guardrails {
 		if ( self::MODE_GUARDED !== $settings['mode'] ) {
 			return array(
 				'allowed'     => false,
-				'code'        => 'WOOSAFE_MODE_READ_ONLY',
-				'message'     => sprintf( 'Blocked "%s": WooSafe MCP is locked in Read-Only Audit Mode (default).', $tool_name ),
-				'remediation' => 'Switch Safety Mode to "Guarded Write Mode" and toggle this tool in WooCommerce > WooSafe MCP.',
+				'code'        => 'STOREGUARD_MODE_READ_ONLY',
+				'message'     => sprintf( 'Blocked "%s": StoreGuard MCP is locked in Read-Only Audit Mode (default).', $tool_name ),
+				'remediation' => 'Switch Safety Mode to "Guarded Write Mode" and toggle this tool in WooCommerce > StoreGuard MCP.',
 			);
 		}
 
 		if ( empty( $settings['allowed_write_tools'][ $tool_name ] ) ) {
 			return array(
 				'allowed'     => false,
-				'code'        => 'WOOSAFE_TOOL_DISABLED',
+				'code'        => 'STOREGUARD_TOOL_DISABLED',
 				'message'     => sprintf( 'Blocked "%s": tool is disabled in the Per-Tool Permission Matrix.', $tool_name ),
-				'remediation' => sprintf( 'Enable "%s" in WooCommerce > WooSafe MCP > Permission Matrix.', $tool_name ),
+				'remediation' => sprintf( 'Enable "%s" in WooCommerce > StoreGuard MCP > Permission Matrix.', $tool_name ),
 			);
 		}
 
@@ -208,7 +208,7 @@ final class WooSafe_MCP_Guardrails {
 	public static function validate_price_change( float $old_price, float $new_price, float $max_delta_pct, string $field_label = 'regular_price' ): ?array {
 		if ( $new_price <= 0 ) {
 			return array(
-				'code'          => 'WOOSAFE_INVALID_PRICE',
+				'code'          => 'STOREGUARD_INVALID_PRICE',
 				'field'         => $field_label,
 				'old_price'     => $old_price,
 				'new_price'     => $new_price,
@@ -221,7 +221,7 @@ final class WooSafe_MCP_Guardrails {
 			$delta_pct = round( ( ( $new_price - $old_price ) / $old_price ) * 100, 2 );
 			if ( abs( $delta_pct ) > $max_delta_pct ) {
 				return array(
-					'code'          => 'WOOSAFE_PRICE_CAP_EXCEEDED',
+					'code'          => 'STOREGUARD_PRICE_CAP_EXCEEDED',
 					'field'         => $field_label,
 					'old_price'     => $old_price,
 					'new_price'     => $new_price,
@@ -252,14 +252,14 @@ final class WooSafe_MCP_Guardrails {
 	public static function validate_batch_count( int $count, int $max_batch_items ): ?array {
 		if ( $count <= 0 ) {
 			return array(
-				'code'    => 'WOOSAFE_EMPTY_BATCH',
+				'code'    => 'STOREGUARD_EMPTY_BATCH',
 				'message' => 'Batch adjustments array must include at least 1 product.',
 			);
 		}
 
 		if ( $count > $max_batch_items ) {
 			return array(
-				'code'            => 'WOOSAFE_BATCH_CAP_EXCEEDED',
+				'code'            => 'STOREGUARD_BATCH_CAP_EXCEEDED',
 				'requested_count' => $count,
 				'max_batch_items' => $max_batch_items,
 				'message'         => sprintf(
@@ -284,14 +284,14 @@ final class WooSafe_MCP_Guardrails {
 	public static function validate_coupon_amount( string $discount_type, float $amount, array $settings ): ?array {
 		if ( $amount <= 0 ) {
 			return array(
-				'code'    => 'WOOSAFE_INVALID_COUPON_AMOUNT',
+				'code'    => 'STOREGUARD_INVALID_COUPON_AMOUNT',
 				'message' => 'Coupon discount amount must be greater than 0.',
 			);
 		}
 
 		if ( 'percent' === $discount_type && $amount > (float) $settings['max_coupon_percent'] ) {
 			return array(
-				'code'               => 'WOOSAFE_COUPON_CAP_EXCEEDED',
+				'code'               => 'STOREGUARD_COUPON_CAP_EXCEEDED',
 				'discount_type'      => $discount_type,
 				'amount'             => $amount,
 				'max_coupon_percent' => (float) $settings['max_coupon_percent'],
@@ -305,7 +305,7 @@ final class WooSafe_MCP_Guardrails {
 
 		if ( 'percent' !== $discount_type && $amount > (float) $settings['max_coupon_fixed'] ) {
 			return array(
-				'code'             => 'WOOSAFE_COUPON_CAP_EXCEEDED',
+				'code'             => 'STOREGUARD_COUPON_CAP_EXCEEDED',
 				'discount_type'    => $discount_type,
 				'amount'           => $amount,
 				'max_coupon_fixed' => (float) $settings['max_coupon_fixed'],

@@ -1,8 +1,8 @@
 <?php
 /**
- * WooSafe MCP Uninstall Cleanup.
+ * StoreGuard MCP Uninstall Cleanup.
  *
- * @package WooSafe_MCP
+ * @package StoreGuard_MCP
  */
 
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
@@ -11,10 +11,10 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 global $wpdb;
 
-delete_option( 'woosafe_mcp_settings' );
-delete_option( 'woosafe_mcp_tokens' );
+delete_option( 'storeguard_mcp_settings' );
+delete_option( 'storeguard_mcp_tokens' );
 
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
-$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . 'woosafe_snapshots' ) );
+$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . 'storeguard_snapshots' ) );
 // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
-$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . 'woosafe_audit_log' ) );
+$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . 'storeguard_audit_log' ) );

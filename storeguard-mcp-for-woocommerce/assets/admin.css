@@ -1,0 +1,60 @@
+/* StoreGuard MCP WP Admin Styles */
+.storeguard-wrap { max-width: 1120px; margin-top: 18px; }
+.storeguard-hero {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	padding: 20px 24px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 16px;
+	margin-bottom: 18px;
+}
+.storeguard-hero h1 { margin: 0 0 6px; font-size: 22px; font-weight: 700; }
+.storeguard-hero p { margin: 0; color: #50575e; }
+.storeguard-badges { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.storeguard-pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.storeguard-pill-ro { background: #e7f5ee; color: #0b6e3d; border: 1px solid #9bd7b6; }
+.storeguard-pill-rw { background: #fff7e6; color: #92400e; border: 1px solid #f5c26b; }
+.storeguard-pill-hpos { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.storeguard-grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+	gap: 18px;
+	margin-bottom: 18px;
+}
+@media (max-width: 1100px) { .storeguard-grid { grid-template-columns: minmax(0, 1fr); } }
+.storeguard-card {
+	min-width: 0;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	padding: 20px 22px;
+	margin-bottom: 18px;
+}
+.storeguard-card h2 { margin-top: 0; font-size: 16px; border-bottom: 1px solid #f0f0f1; padding-bottom: 10px; }
+.storeguard-code-box {
+	background: #0f172a;
+	color: #e2e8f0;
+	border-radius: 6px;
+	padding: 14px;
+	font-family: Consolas, Monaco, monospace;
+	font-size: 12px;
+	overflow-x: auto;
+	white-space: pre;
+	margin: 10px 0;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+.storeguard-token-reveal { background: #ecfdf5; border: 1px solid #6ee7b7; border-radius: 6px; padding: 14px; margin-bottom: 14px; }
+.storeguard-token-reveal code { display: block; margin-top: 6px; padding: 8px; background: #fff; border: 1px solid #a7f3d0; font-size: 13px; word-break: break-all; }
+.storeguard-btn-rollback { background: #059669 !important; border-color: #047857 !important; color: #fff !important; font-weight: 600; }
+.storeguard-btn-rollback:hover { background: #047857 !important; }
+.storeguard-tabs { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.storeguard-tab-btn.is-active { background: #1d4ed8; color: #fff; border-color: #1d4ed8; }
+.storeguard-status-ok { color: #059669; font-weight: 600; }
+.storeguard-status-denied { color: #b91c1c; font-weight: 600; }
+.storeguard-status-muted { color: #64748b; }
+.storeguard-form-inline { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 14px; }

@@ -1,25 +1,25 @@
 <?php
 /**
- * Scoped Bearer API Token Authentication for WooSafe MCP.
+ * Scoped Bearer API Token Authentication for StoreGuard MCP.
  *
- * Tokens use format: wsmcp_<ro|rw>_<12-hex-id>_<40-hex-secret>
+ * Tokens use format: sgmcp_<ro|rw>_<12-hex-id>_<40-hex-secret>
  * Secrets are hashed with wp_hash_password() and IDs/prefixes verified via hash_equals().
  * Raw WordPress passwords or Application Passwords are never requested or stored.
  *
- * @package WooSafe_MCP
+ * @package StoreGuard_MCP
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-final class WooSafe_MCP_Auth {
+final class StoreGuard_MCP_Auth {
 
-	public const OPTION_TOKENS = 'woosafe_mcp_tokens';
+	public const OPTION_TOKENS = 'storeguard_mcp_tokens';
 	public const SCOPE_READ_ONLY = 'read_only';
 	public const SCOPE_READ_WRITE = 'read_write';
 
-	private const TOKEN_REGEX = '/^(wsmcp_ro|wsmcp_rw)_([a-f0-9]{12})_([a-f0-9]{40})$/';
+	private const TOKEN_REGEX = '/^(sgmcp_ro|sgmcp_rw)_([a-f0-9]{12})_([a-f0-9]{40})$/';
 
 	/**
 	 * Fetch all stored token records keyed by token ID.
@@ -40,7 +40,7 @@ final class WooSafe_MCP_Auth {
 	 */
 	public static function generate_token( string $label, string $scope = self::SCOPE_READ_ONLY ): array {
 		$scope = ( self::SCOPE_READ_WRITE === $scope ) ? self::SCOPE_READ_WRITE : self::SCOPE_READ_ONLY;
-		$prefix = ( self::SCOPE_READ_WRITE === $scope ) ? 'wsmcp_rw' : 'wsmcp_ro';
+		$prefix = ( self::SCOPE_READ_WRITE === $scope ) ? 'sgmcp_rw' : 'sgmcp_ro';
 
 		$clean_label = sanitize_text_field( $label );
 		if ( '' === $clean_label ) {
@@ -156,7 +156,7 @@ final class WooSafe_MCP_Auth {
 			return null;
 		}
 
-		$expected_scope = ( 'wsmcp_rw' === $parsed_prefix ) ? self::SCOPE_READ_WRITE : self::SCOPE_READ_ONLY;
+		$expected_scope = ( 'sgmcp_rw' === $parsed_prefix ) ? self::SCOPE_READ_WRITE : self::SCOPE_READ_ONLY;
 		if ( ! hash_equals( (string) ( $matched['scope'] ?? '' ), $expected_scope ) ) {
 			return null;
 		}

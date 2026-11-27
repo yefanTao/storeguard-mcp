@@ -1,6 +1,6 @@
 {
   "$schema": "https://playground.wordpress.net/blueprint-schema.json",
-  "landingPage": "/wp-admin/admin.php?page=woosafe-mcp",
+  "landingPage": "/wp-admin/admin.php?page=storeguard-mcp",
   "preferredVersions": {
     "php": "8.3",
     "wp": "latest"
@@ -25,7 +25,7 @@
       "step": "installPlugin",
       "pluginData": {
         "resource": "url",
-        "url": "https://woosafe-mcp.kittenlabs-hq.workers.dev/downloads/woosafe-mcp-v1.0.0.zip"
+        "url": "https://storeguard-mcp.kittenlabs-hq.workers.dev/downloads/storeguard-mcp-for-woocommerce-v1.0.0.zip"
       }
     }
   ]

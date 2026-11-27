@@ -1,6 +1,6 @@
 <?php
 /**
- * Streamable HTTP / JSON-RPC 2.0 MCP Endpoint at /wp-json/woosafe-mcp/v1/mcp.
+ * Streamable HTTP / JSON-RPC 2.0 MCP Endpoint at /wp-json/storeguard-mcp/v1/mcp.
  *
  * Implements MCP protocol methods:
  * - initialize
@@ -9,16 +9,16 @@
  * - tools/list
  * - tools/call
  *
- * @package WooSafe_MCP
+ * @package StoreGuard_MCP
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-final class WooSafe_MCP_Endpoint {
+final class StoreGuard_MCP_Endpoint {
 
-	public const REST_NAMESPACE = 'woosafe-mcp/v1';
+	public const REST_NAMESPACE = 'storeguard-mcp/v1';
 	public const REST_ROUTE     = '/mcp';
 
 	/**
@@ -55,16 +55,16 @@ final class WooSafe_MCP_Endpoint {
 	 * @return true|WP_Error
 	 */
 	public static function check_bearer_permission( WP_REST_Request $request ) {
-		$auth = WooSafe_MCP_Auth::authenticate_request( $request );
+		$auth = StoreGuard_MCP_Auth::authenticate_request( $request );
 		if ( null === $auth ) {
 			return new WP_Error(
-				'woosafe_unauthorized',
-				__( 'Missing, invalid, or revoked WooSafe MCP Bearer token.', 'woosafe-mcp' ),
+				'storeguard_unauthorized',
+				__( 'Missing, invalid, or revoked StoreGuard MCP Bearer token.', 'storeguard-mcp-for-woocommerce' ),
 				array( 'status' => 401 )
 			);
 		}
 
-		$request->set_param( '_woosafe_auth', $auth );
+		$request->set_param( '_storeguard_auth', $auth );
 		return true;
 	}
 
@@ -106,7 +106,7 @@ final class WooSafe_MCP_Endpoint {
 	 * @return WP_REST_Response
 	 */
 	public static function handle_post( WP_REST_Request $request ): WP_REST_Response {
-		$auth_context = $request->get_param( '_woosafe_auth' );
+		$auth_context = $request->get_param( '_storeguard_auth' );
 		if ( ! is_array( $auth_context ) ) {
 			return self::json_rpc_error_response( null, -32001, 'Unauthorized', null, 401 );
 		}
@@ -185,10 +185,10 @@ final class WooSafe_MCP_Endpoint {
 			case 'initialize':
 				$client_version = isset( $params['protocolVersion'] ) && is_string( $params['protocolVersion'] )
 					? $params['protocolVersion']
-					: WOOSAFE_MCP_PROTOCOL_VERSION;
+					: STOREGUARD_MCP_PROTOCOL_VERSION;
 				$supported      = in_array( $client_version, array( '2025-03-26', '2024-11-05' ), true )
 					? $client_version
-					: WOOSAFE_MCP_PROTOCOL_VERSION;
+					: STOREGUARD_MCP_PROTOCOL_VERSION;
 
 				return array(
 					'jsonrpc' => '2.0',
@@ -201,10 +201,10 @@ final class WooSafe_MCP_Endpoint {
 							),
 						),
 						'serverInfo'      => array(
-							'name'    => 'woosafe-mcp',
-							'version' => WOOSAFE_MCP_VERSION,
+							'name'    => 'storeguard-mcp',
+							'version' => STOREGUARD_MCP_VERSION,
 						),
-						'instructions'    => 'WooSafe MCP defaults to Read-Only Audit Mode. Guarded write tools default to dry_run: true and enforce price-delta and batch-size caps with 1-click rollback snapshots.',
+						'instructions'    => 'StoreGuard MCP defaults to Read-Only Audit Mode. Guarded write tools default to dry_run: true and enforce price-delta and batch-size caps with 1-click rollback snapshots.',
 					),
 				);
 
@@ -217,8 +217,8 @@ final class WooSafe_MCP_Endpoint {
 
 			case 'tools/list':
 				$all_tools = array_merge(
-					WooSafe_MCP_Tools_Read::get_definitions(),
-					apply_filters( 'woosafe_mcp_write_tool_definitions', array() )
+					StoreGuard_MCP_Tools_Read::get_definitions(),
+					apply_filters( 'storeguard_mcp_write_tool_definitions', array() )
 				);
 				return array(
 					'jsonrpc' => '2.0',
@@ -248,17 +248,17 @@ final class WooSafe_MCP_Endpoint {
 			return self::build_error_object( $id, -32602, 'Invalid params: tool "name" is required.' );
 		}
 
-		$is_read  = WooSafe_MCP_Tools_Read::is_read_tool( $tool_name );
-		$is_write = in_array( $tool_name, WooSafe_MCP_Guardrails::get_registered_write_tools(), true );
+		$is_read  = StoreGuard_MCP_Tools_Read::is_read_tool( $tool_name );
+		$is_write = in_array( $tool_name, StoreGuard_MCP_Guardrails::get_registered_write_tools(), true );
 
 		if ( ! $is_read && ! $is_write ) {
 			return self::build_error_object( $id, -32601, sprintf( 'Unknown MCP tool: %s', $tool_name ) );
 		}
 
-		$gate = WooSafe_MCP_Guardrails::authorize_tool( $tool_name, $is_write, $args, $auth_context );
+		$gate = StoreGuard_MCP_Guardrails::authorize_tool( $tool_name, $is_write, $args, $auth_context );
 		if ( empty( $gate['allowed'] ) ) {
 			$elapsed = (int) round( ( microtime( true ) - $started_at ) * 1000 );
-			WooSafe_MCP_Snapshots::log_audit(
+			StoreGuard_MCP_Snapshots::log_audit(
 				array(
 					'request_id'  => (string) $id,
 					'token_id'    => (string) ( $auth_context['id'] ?? '' ),
@@ -266,8 +266,8 @@ final class WooSafe_MCP_Endpoint {
 					'tool_name'   => $tool_name,
 					'mode'        => 'blocked',
 					'decision'    => 'denied',
-					'reason'      => (string) ( $gate['code'] ?? 'WOOSAFE_BLOCKED' ),
-					'summary'     => (string) ( $gate['message'] ?? 'Blocked by WooSafe guardrails' ),
+					'reason'      => (string) ( $gate['code'] ?? 'STOREGUARD_BLOCKED' ),
+					'summary'     => (string) ( $gate['message'] ?? 'Blocked by StoreGuard guardrails' ),
 					'duration_ms' => $elapsed,
 				)
 			);
@@ -284,10 +284,10 @@ final class WooSafe_MCP_Endpoint {
 		}
 
 		if ( $is_read ) {
-			$result = WooSafe_MCP_Tools_Read::execute( $tool_name, $args );
+			$result = StoreGuard_MCP_Tools_Read::execute( $tool_name, $args );
 		} else {
 			$result = apply_filters(
-				'woosafe_mcp_execute_write_tool',
+				'storeguard_mcp_execute_write_tool',
 				null,
 				$tool_name,
 				$args,
@@ -298,7 +298,7 @@ final class WooSafe_MCP_Endpoint {
 			if ( ! is_array( $result ) ) {
 				$result = array(
 					'error' => array(
-						'code'    => 'WOOSAFE_WRITE_HANDLER_MISSING',
+						'code'    => 'STOREGUARD_WRITE_HANDLER_MISSING',
 						'message' => sprintf( 'No write handler registered for tool "%s".', $tool_name ),
 					),
 				);
@@ -308,13 +308,13 @@ final class WooSafe_MCP_Endpoint {
 		$elapsed = (int) round( ( microtime( true ) - $started_at ) * 1000 );
 
 		if ( isset( $result['error'] ) && is_array( $result['error'] ) ) {
-			$err_code = (string) ( $result['error']['code'] ?? 'WOOSAFE_ERROR' );
+			$err_code = (string) ( $result['error']['code'] ?? 'STOREGUARD_ERROR' );
 			$err_msg  = (string) ( $result['error']['message'] ?? 'Tool execution blocked.' );
-			$rpc_code = in_array( $err_code, array( 'WOOSAFE_INVALID_PARAMS', 'WOOSAFE_NO_FIELDS', 'WOOSAFE_INVALID_STATUS' ), true )
+			$rpc_code = in_array( $err_code, array( 'STOREGUARD_INVALID_PARAMS', 'STOREGUARD_NO_FIELDS', 'STOREGUARD_INVALID_STATUS' ), true )
 				? -32602
-				: ( 'WOOSAFE_PRODUCT_NOT_FOUND' === $err_code ? -32004 : -32003 );
+				: ( 'STOREGUARD_PRODUCT_NOT_FOUND' === $err_code ? -32004 : -32003 );
 
-			WooSafe_MCP_Snapshots::log_audit(
+			StoreGuard_MCP_Snapshots::log_audit(
 				array(
 					'request_id'  => (string) $id,
 					'token_id'    => (string) ( $auth_context['id'] ?? '' ),
@@ -331,7 +331,7 @@ final class WooSafe_MCP_Endpoint {
 			return self::build_error_object( $id, $rpc_code, $err_msg, $result['error'] );
 		}
 
-		WooSafe_MCP_Snapshots::log_audit(
+		StoreGuard_MCP_Snapshots::log_audit(
 			array(
 				'request_id'    => (string) $id,
 				'token_id'      => (string) ( $auth_context['id'] ?? '' ),

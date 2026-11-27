@@ -5,21 +5,21 @@
  * Uses WooCommerce CRUD APIs (wc_get_product, WC_Coupon) so rollbacks work identically
  * under both HPOS (custom_order_tables) and legacy storage without raw postmeta SQL writes.
  *
- * @package WooSafe_MCP
+ * @package StoreGuard_MCP
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-final class WooSafe_MCP_Snapshots {
+final class StoreGuard_MCP_Snapshots {
 
 	/**
 	 * Snapshots table name.
 	 */
 	public static function table_snapshots(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'woosafe_snapshots';
+		return $wpdb->prefix . 'storeguard_snapshots';
 	}
 
 	/**
@@ -27,7 +27,7 @@ final class WooSafe_MCP_Snapshots {
 	 */
 	public static function table_audit_log(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'woosafe_audit_log';
+		return $wpdb->prefix . 'storeguard_audit_log';
 	}
 
 	/**

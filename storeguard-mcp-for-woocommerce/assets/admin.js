@@ -1,10 +1,10 @@
 (function () {
 	var activeTarget = 'cursor';
-	var tabs = document.querySelectorAll('.woosafe-tab-btn');
-	var cursorBox = document.getElementById('woosafe-config-cursor');
-	var claudeBox = document.getElementById('woosafe-config-claude');
-	var copyBtn = document.getElementById('woosafe-copy-config');
-	var feedback = document.getElementById('woosafe-copy-feedback');
+	var tabs = document.querySelectorAll('.storeguard-tab-btn');
+	var cursorBox = document.getElementById('storeguard-config-cursor');
+	var claudeBox = document.getElementById('storeguard-config-claude');
+	var copyBtn = document.getElementById('storeguard-copy-config');
+	var feedback = document.getElementById('storeguard-copy-feedback');
 
 	tabs.forEach(function (btn) {
 		btn.addEventListener('click', function () {
